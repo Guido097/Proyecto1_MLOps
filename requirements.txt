@@ -21,3 +21,5 @@ uvicorn==0.22.0
 joblib
 scikit-learn
 textblob
+pyarrow
+fastparquet
