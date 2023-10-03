@@ -11,9 +11,6 @@ df_userdata = pd.read_parquet('src/items.parquet')
 df_games = pd.read_parquet('src/games.parquet')
 df_reviews = pd.read_parquet('src/reviews.parquet')
 
-@app.get("/")
-async def root():
-    return { ''' Hola! Este es un proyecto individual para la carrera de Data Science de Henry. Te recomiendo leer el README'''}
 
 @app.get('/PlayTimeGenre/{genero}')
 def PlayTimeGenre(genero: str):
@@ -38,17 +35,17 @@ def PlayTimeGenre(genero: str):
 @app.get('/UserForGenre/{genero}')
 def UserForGenre(genero: str):
     try:
-        # Verificar si el género especificado existe como columna en el DataFrame
+        # Verificamos si el género especificado existe como columna en el DataFrame
         if genero not in df_userdata.columns:
             return {"mensaje": f"El género '{genero}' no se encuentra en los datos"}
 
-        # Filtrar el DataFrame para obtener solo las filas donde el género sea 1 (verdadero)
+        # Filtramos el DataFrame para obtener solo las filas donde el género sea 1 (verdadero)
         filtered_df = df_userdata[df_userdata[genero] == 1]
 
         if len(filtered_df) == 0:
             return {"mensaje": f"No se encontraron datos para el género '{genero}'"}
 
-        # Encontrar el usuario con más horas jugadas para ese género
+        # Encontramos el usuario con más horas jugadas para ese género
         usuario_mas_horas = filtered_df.groupby('user_id')['playtimeforever'].sum().idxmax()
 
         return {
@@ -107,16 +104,16 @@ def UsersNotRecommend(anio: int):
 @app.get('/SentimentAnalysis/{anio}')
 def sentiment_analysis(anio: int):
     try:
-        # Filtrar el DataFrame por el año especificado
+        # Filtramos el DataFrame por el año especificado
         df_filtered = df_reviews[df_reviews['year'] == anio]
         
-        # Contar la cantidad de revisiones en cada categoría de sentimiento
+        # Contamos la cantidad de revisiones en cada categoría de sentimiento
         sentiment_counts = df_filtered['sentiment_analysis'].value_counts()
         
-        # Convertir los valores a tipos nativos de Python para evitar el error de serialización
+        # Convertimos los valores a tipos nativos de Python para evitar el error de serialización
         sentiment_counts = sentiment_counts.to_dict()
         
-        # Crear un diccionario con los resultados en el formato deseado
+        # Creamos un diccionario con los resultados en el formato deseado
         result = {
             'Negative': sentiment_counts.get('Negativo', 0),
             'Neutral': sentiment_counts.get('Neutral', 0),
