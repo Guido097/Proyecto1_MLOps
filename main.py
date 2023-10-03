@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 import pandas as pd
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+from fastapi import FastAPI, Depends
+#from sklearn.metrics.pairwise import cosine_similarity
 
 
 app = FastAPI()
@@ -10,13 +11,16 @@ df_userdata = pd.read_parquet('src/items.parquet')
 df_games = pd.read_parquet('src/games.parquet')
 df_reviews = pd.read_parquet('src/reviews.parquet')
 
+# Define la función get_df_games como una dependencia
+def get_df_games():
+    return df_games
 
 @app.get('/PlayTimeGenre/{genero}')
-def PlayTimeGenre(genero: str):
+def PlayTimeGenre(genero: str, df_games: pd.DataFrame = Depends(get_df_games)):
     try:
         if genero not in df_games.columns:
             return {"mensaje": f"El género '{genero}' no se encuentra en los datos"}
-
+        
         filtered_df = df_games[df_games[genero] == 1]
 
         if len(filtered_df) == 0:
@@ -24,11 +28,12 @@ def PlayTimeGenre(genero: str):
 
         año_mas_horas = filtered_df.groupby('release_year')['playtimeforever'].sum().idxmax()
         
-        del filtered_df
-        
+        año_mas_horas = int(año_mas_horas)
+
         return {f"Año de lanzamiento con más horas jugadas para el género '{genero}'": año_mas_horas}
     except Exception as e:
         return {"error": str(e)}
+
 
 @app.get('/UserForGenre/{genero}')
 def UserForGenre(genero: str):
@@ -42,8 +47,6 @@ def UserForGenre(genero: str):
             return {"mensaje": f"No se encontraron datos para el género '{genero}'"}
 
         usuario_mas_horas = filtered_df.groupby('user_id')['playtimeforever'].sum().idxmax()
-        
-        del filtered_df
         
         return {
             f"Usuario con más horas jugadas para el género '{genero}'": usuario_mas_horas}
@@ -64,7 +67,6 @@ def UsersRecommend(anio: int):
         
         top_3_games = recommendations_count.head(3)
         
-        del df_filtered
         
         result = [{"Puesto {}: {}".format(i+1, game): count} for i, (game, count) in enumerate(top_3_games.iteritems())]
         
@@ -104,7 +106,9 @@ def sentiment_analysis(anio: int):
         del df_filtered
         
         result = {
-            sentiment: count for sentiment, count in sentiment_counts.items()
+            'Negative': sentiment_counts.get('Negativo', 0),
+            'Neutral': sentiment_counts.get('Neutral', 0),
+            'Positive': sentiment_counts.get('Positivo', 0)
         }
         return result
     except Exception as e:
