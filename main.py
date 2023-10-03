@@ -23,7 +23,9 @@ def PlayTimeGenre(genero: str):
             return {"mensaje": f"No se encontraron datos para el género '{genero}'"}
 
         año_mas_horas = filtered_df.groupby('release_year')['playtimeforever'].sum().idxmax()
-
+        
+        del filtered_df
+        
         return {f"Año de lanzamiento con más horas jugadas para el género '{genero}'": año_mas_horas}
     except Exception as e:
         return {"error": str(e)}
@@ -40,7 +42,9 @@ def UserForGenre(genero: str):
             return {"mensaje": f"No se encontraron datos para el género '{genero}'"}
 
         usuario_mas_horas = filtered_df.groupby('user_id')['playtimeforever'].sum().idxmax()
-
+        
+        del filtered_df
+        
         return {
             f"Usuario con más horas jugadas para el género '{genero}'": usuario_mas_horas}
     except Exception as e:
@@ -60,6 +64,8 @@ def UsersRecommend(anio: int):
         
         top_3_games = recommendations_count.head(3)
         
+        del df_filtered
+        
         result = [{"Puesto {}: {}".format(i+1, game): count} for i, (game, count) in enumerate(top_3_games.iteritems())]
         
         return result
@@ -78,6 +84,8 @@ def UsersNotRecommend(anio: int):
         
         bottom_3_games = not_recommendations_count.head(3)
         
+        del df_filtered
+        
         result = [{"Puesto {}: {}".format(i+1, game): count} for i, (game, count) in enumerate(bottom_3_games.iteritems())]
         
         return result
@@ -93,11 +101,36 @@ def sentiment_analysis(anio: int):
         
         sentiment_counts = sentiment_counts.to_dict()
         
+        del df_filtered
+        
         result = {
-            'Negative': sentiment_counts.get('Negativo', 0),
-            'Neutral': sentiment_counts.get('Neutral', 0),
-            'Positive': sentiment_counts.get('Positivo', 0)
+            sentiment: count for sentiment, count in sentiment_counts.items()
         }
         return result
     except Exception as e:
         return {"error": str(e)}
+
+
+'''@app.get('/recomendacion_juego/{id}')
+def recomendacion_juego_por_id(id_producto: int):
+    try:
+        num_recomendaciones=5
+        df = df_games.drop(columns=['tags','specs','developer'])
+        juego = df[df['id'] == id_producto]
+
+        if juego.empty:
+            return "Juego no encontrado"
+
+        # Normaliza las características del juego
+        juego_caracteristicas = juego.drop(columns=['id','playtimeforever','app_name'])
+        juego_caracteristicas_normalized = (juego_caracteristicas - juego_caracteristicas.min()) / (juego_caracteristicas.max() - juego_caracteristicas.min())
+        juego_caracteristicas_normalized = juego_caracteristicas_normalized.fillna(0)
+        # Calcula la similitud de coseno entre el juego y todos los demás juegos
+        similarity_scores = cosine_similarity(juego_caracteristicas_normalized, df.drop(columns=['id']).values)
+        # Encuentra los juegos más similares (excluyendo el juego de entrada)
+        similar_games_indices = similarity_scores.argsort()[0][-num_recomendaciones-1:-1][::-1]
+        similar_games = df_games.loc[similar_games_indices, 'app_name']
+
+        return similar_games.tolist()
+    except Exception as e:
+        return {"error": str(e)}'''
