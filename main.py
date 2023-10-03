@@ -8,8 +8,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 app = FastAPI()
 
 df_userdata = pd.read_parquet('src/items.parquet')
-df_games = pd.read_csv('src/games.csv')
-df_reviews = pd.read_csv('src/reviews.csv')
+df_games = pd.read_parquet('src/games.parquet')
+df_reviews = pd.read_parquet('src/reviews.parquet')
 
 @app.get("/")
 async def root():
