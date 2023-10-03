@@ -127,7 +127,7 @@ def sentiment_analysis(anio: int):
     except Exception as e:
         return {"error": str(e)}
 
-@app.get('/recomendacion_juego/{id}')
+'''@app.get('/recomendacion_juego/{id}')
 def recomendacion_juego_por_id(id_producto: int):
     try:
         num_recomendaciones=5
@@ -149,6 +149,6 @@ def recomendacion_juego_por_id(id_producto: int):
 
         return similar_games.tolist()
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e)}'''
 
 
