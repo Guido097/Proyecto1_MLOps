@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 import pandas as pd
 import numpy as np
-from fastapi.responses import JSONResponse
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -15,17 +14,14 @@ df_reviews = pd.read_parquet('src/reviews.parquet')
 @app.get('/PlayTimeGenre/{genero}')
 def PlayTimeGenre(genero: str):
     try:
-        # Verificar si el género especificado existe como columna en el DataFrame
         if genero not in df_games.columns:
             return {"mensaje": f"El género '{genero}' no se encuentra en los datos"}
 
-        # Filtrar el DataFrame para obtener solo las filas donde el género sea 1 (verdadero)
         filtered_df = df_games[df_games[genero] == 1]
 
         if len(filtered_df) == 0:
             return {"mensaje": f"No se encontraron datos para el género '{genero}'"}
 
-        # Encontrar el año con más horas jugadas entre los juegos de ese género
         año_mas_horas = filtered_df.groupby('release_year')['playtimeforever'].sum().idxmax()
 
         return {f"Año de lanzamiento con más horas jugadas para el género '{genero}'": año_mas_horas}
@@ -35,17 +31,14 @@ def PlayTimeGenre(genero: str):
 @app.get('/UserForGenre/{genero}')
 def UserForGenre(genero: str):
     try:
-        # Verificamos si el género especificado existe como columna en el DataFrame
         if genero not in df_userdata.columns:
             return {"mensaje": f"El género '{genero}' no se encuentra en los datos"}
 
-        # Filtramos el DataFrame para obtener solo las filas donde el género sea 1 (verdadero)
         filtered_df = df_userdata[df_userdata[genero] == 1]
 
         if len(filtered_df) == 0:
             return {"mensaje": f"No se encontraron datos para el género '{genero}'"}
 
-        # Encontramos el usuario con más horas jugadas para ese género
         usuario_mas_horas = filtered_df.groupby('user_id')['playtimeforever'].sum().idxmax()
 
         return {
@@ -57,21 +50,16 @@ def UserForGenre(genero: str):
 def UsersRecommend(anio: int):
     try:
         
-        # Filtramos el DataFrame por el año especificado
         df_filtered = df_reviews[df_reviews['year'] == anio]
         
-        # Filtramos por recomendaciones positivas o neutrales
         df_filtered = df_filtered[(df_filtered['recommend'] == True) & 
                                 ((df_filtered['sentiment_analysis'] == 'Positivo') | 
                                 (df_filtered['sentiment_analysis'] == 'Neutral'))]
         
-        # Contamos la cantidad de recomendaciones por juego
         recommendations_count = df_filtered['app_name'].value_counts()
         
-        # Obtenemos los 3 juegos más recomendados
         top_3_games = recommendations_count.head(3)
         
-        # Creamos la lista de resultados en el formato deseado
         result = [{"Puesto {}: {}".format(i+1, game): count} for i, (game, count) in enumerate(top_3_games.iteritems())]
         
         return result
@@ -81,20 +69,15 @@ def UsersRecommend(anio: int):
 @app.get('/UsersNotRecommend/{anio}')
 def UsersNotRecommend(anio: int):
     try:
-        # Filtramos el DataFrame por el año especificado
         df_filtered = df_reviews[df_reviews['year'] == anio]
         
-        # Filtramos por recomendaciones negativas y comentarios negativos
         df_filtered = df_filtered[(df_filtered['recommend'] == False) & 
                                 (df_filtered['sentiment_analysis'] == 'Negativo')]
         
-        # Contamos la cantidad de juegos que no fueron recomendados y eran negativos
         not_recommendations_count = df_filtered['app_name'].value_counts()
         
-        # Obtenemos los 3 juegos menos recomendados
         bottom_3_games = not_recommendations_count.head(3)
         
-        # Creamos la lista de resultados en el formato deseado
         result = [{"Puesto {}: {}".format(i+1, game): count} for i, (game, count) in enumerate(bottom_3_games.iteritems())]
         
         return result
@@ -104,16 +87,12 @@ def UsersNotRecommend(anio: int):
 @app.get('/SentimentAnalysis/{anio}')
 def sentiment_analysis(anio: int):
     try:
-        # Filtramos el DataFrame por el año especificado
         df_filtered = df_reviews[df_reviews['year'] == anio]
         
-        # Contamos la cantidad de revisiones en cada categoría de sentimiento
         sentiment_counts = df_filtered['sentiment_analysis'].value_counts()
         
-        # Convertimos los valores a tipos nativos de Python para evitar el error de serialización
         sentiment_counts = sentiment_counts.to_dict()
         
-        # Creamos un diccionario con los resultados en el formato deseado
         result = {
             'Negative': sentiment_counts.get('Negativo', 0),
             'Neutral': sentiment_counts.get('Neutral', 0),
