@@ -98,7 +98,6 @@ def sentiment_analysis(anio: int):
             'Neutral': sentiment_counts.get('Neutral', 0),
             'Positive': sentiment_counts.get('Positivo', 0)
         }
-        
         return result
     except Exception as e:
         return {"error": str(e)}
