@@ -101,29 +101,3 @@ def sentiment_analysis(anio: int):
         return result
     except Exception as e:
         return {"error": str(e)}
-
-'''@app.get('/recomendacion_juego/{id}')
-def recomendacion_juego_por_id(id_producto: int):
-    try:
-        num_recomendaciones=5
-        df = df_games.drop(columns=['tags','specs','developer'])
-        juego = df[df['id'] == id_producto]
-
-        if juego.empty:
-            return "Juego no encontrado"
-
-        # Normaliza las características del juego
-        juego_caracteristicas = juego.drop(columns=['id','playtimeforever','app_name'])
-        juego_caracteristicas_normalized = (juego_caracteristicas - juego_caracteristicas.min()) / (juego_caracteristicas.max() - juego_caracteristicas.min())
-        juego_caracteristicas_normalized = juego_caracteristicas_normalized.fillna(0)
-        # Calcula la similitud de coseno entre el juego y todos los demás juegos
-        similarity_scores = cosine_similarity(juego_caracteristicas_normalized, df.drop(columns=['id']).values)
-        # Encuentra los juegos más similares (excluyendo el juego de entrada)
-        similar_games_indices = similarity_scores.argsort()[0][-num_recomendaciones-1:-1][::-1]
-        similar_games = df_games.loc[similar_games_indices, 'app_name']
-
-        return similar_games.tolist()
-    except Exception as e:
-        return {"error": str(e)}'''
-
-
